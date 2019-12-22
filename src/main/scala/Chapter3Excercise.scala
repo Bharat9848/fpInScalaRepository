@@ -90,6 +90,10 @@ object Chapter3Excercise {
     /*
     3.13 Hard: Can you write foldLeft in terms of foldRight? How about the other way around? Implementing foldRight via foldLeft is useful because it lets us implement foldRight tail-recursively, which means it works even for large lists without overflowing the stack.
      */
+    println(foldLeftViaFR(ls, "process zero")((a, old) => {print(s"$old===>")
+    s"processing $a" }))
+    println(foldRightViaFL(ls, "process zero")((old, a) => {print(s"$old===>")
+    s"processing $a" }))
     /*
     3.14 Implement append in terms of either foldLeft or foldRight.
      */

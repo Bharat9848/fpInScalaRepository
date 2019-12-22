@@ -51,22 +51,11 @@ object MyList {
   def size[A](ls: MyList[A]): Int = foldLeft[A, Int](ls, 0)((acc, _) => acc + 1)
 
   def zipWith[A, B](ls: MyList[A], xs: MyList[B]): MyList[(A, B)] = {
-    val lSize = size(ls)
-    val xSize = size(xs)
-    val minSize = if (lSize < xSize) lSize else xSize
-
-    @tailrec
-    def createTuple(ls: MyList[A], xs: MyList[B], acc: MyList[(A, B)], index: Int, till: Int): MyList[(A, B)] = {
-      if (index + 1 == till) {
-        acc
-      } else {
-        val lse = get(ls, index)
-        val xse = get(xs, index)
-        createTuple(ls, xs, Cons((lse, xse), acc), index + 1, till)
-      }
+    (ls, xs) match {
+      case (_, MyNil) => MyNil
+      case (MyNil, _) => MyNil
+      case (Cons(a, tail1), Cons(b, tail2)) => Cons((a, b), zipWith(tail1, tail2))
     }
-
-    revese(createTuple(ls, xs, MyNil, 0, minSize))
   }
 
 
@@ -132,13 +121,9 @@ object MyList {
   def length[A](ls: MyList[A]): Int = foldRight(ls, 0)((a, b) => b + 1)
 
   def concat[A](ls: MyList[A], ys: MyList[A]): MyList[A] = {
-    (ls, ys) match {
-      case (MyNil, xs) => xs
-      case (zs, MyNil) => zs
-      case (xs, ks) => xs match {
-        case MyNil => ks
-        case Cons(value, next) => Cons(value, concat(next, ks))
-      }
+    ls match {
+      case MyNil => ys
+      case Cons(value, next) => Cons(value, concat(next, ys))
     }
   }
 
@@ -165,6 +150,22 @@ object MyList {
       case MyNil => MyNil
       case Cons(value, next) => if (f(value)) Cons(value, filter(next, f)) else filter(next, f)
     }
+  }
+
+  /*
+    we want a0 to be processed first
+    b => gn(gn-1(gn-2....g2(f(a0, b)))) it allows a0 to be processed first that mimic behavior of foldLeft
+      */
+  def foldLeftViaFR[A, B](ls: MyList[A], zero: B)(f: (A, B) => B): B = {
+    foldRight[A, B => B](ls, (b: B) => b)((a: A, g: B => B) => b => g(f(a, b)))(zero)
+  }
+
+  /*
+    we want an to be processed first
+    b => g0(g1(g2( ... gn(f(an,b))) it allows a0 to be processed first that mimic behavior of foldRight
+      */
+  def foldRightViaFL[A, B](ls: MyList[A], zero: B)(f: (B, A) => B): B = {
+    foldLeft(ls, (b: B) => b)((g, a) => b => g(f(b, a)))(zero)
   }
 
 }
